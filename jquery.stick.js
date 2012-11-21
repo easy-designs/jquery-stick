@@ -151,6 +151,25 @@
 
 			Stick.prototype.resize = function()
 			{
+				var win_w_new = $win.width();
+				
+				// IE wants to constantly run resize for some reason
+				// Let’s make sure it is actually a resize event
+				if ( win_w != win_w_new ) 
+				{
+					// timer shennanigans
+					clearTimeout(timeout);
+					timeout = setTimeout( function(){
+						this._resize();
+					}, 200 );
+					
+					// Update the width
+					win_w = win_w_new;
+				}
+			};
+			
+			Stick.prototype.resize = function()
+			{
 				var target_offset = this.target.offset(),
 					side = this.side,
 					height = $win.height();
