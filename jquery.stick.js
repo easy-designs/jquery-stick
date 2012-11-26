@@ -69,6 +69,10 @@
 				this.width = target.width();
 				this.height = target.height();
 				
+				// tracking the width
+				this.win_w = 0;
+				this.timeout = null;
+				
 				// get the original offset sides & margins
 				var i = SIDES.length,
 					offset,
@@ -151,40 +155,47 @@
 
 			Stick.prototype.resize = function()
 			{
-				var win_w_new = $win.width();
+				var win_w_new = $win.width(),
+					stick = this;
 				
 				// IE wants to constantly run resize for some reason
 				// Let’s make sure it is actually a resize event
-				if ( win_w != win_w_new ) 
+				if ( this.win_w != win_w_new ) 
 				{
 					// timer shennanigans
-					clearTimeout(timeout);
-					timeout = setTimeout( function(){
-						this._resize();
+					clearTimeout( this.timeout );
+					this.timeout = setTimeout( function(){
+						stick._resize();
 					}, 200 );
 					
 					// Update the width
-					win_w = win_w_new;
+					this.win_w = win_w_new;
 				}
 			};
 			
-			Stick.prototype.resize = function()
+			Stick.prototype._resize = function()
 			{
 				var target_offset = this.target.offset(),
 					side = this.side,
-					height = $win.height();
+					w_height = $win.height(),
+					d_height = $(document).height();
 				
 				this.target_top = target_offset.top;
 				this.target_left = target_offset.left;
 				this.target_right = $win.width() - ( this.target_left + this.target.width() );
 				this.target_bottom = this.target_top + this.target.height();
 
-				if ( ( side == 'top' &&
-					   height < this.target_bottom ) ||
-					 ( side == 'bottom' &&
-					   height > this.target_top ) )
+				this.disabled = FALSE;
+				if ( w_height >= d_height )
 				{
 					this.disabled = TRUE;
+				}
+				else
+				if ( ( side == 'top' &&
+					   w_height < this.target_bottom ) ||
+					 ( side == 'bottom' &&
+					   w_height > this.target_top ) )
+				{
 					if ( this.state === FIXED )
 					{
 						return this.position();
@@ -192,7 +203,6 @@
 				}
 				else
 				{
-					this.disabled = FALSE;
 					return this.scroll();
 				}
 			};
